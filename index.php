@@ -11,9 +11,7 @@
 </head>
 
 <body>
-    <h1 class="text-start container mb-4">Book Room</h1>
-
-    <div class="wrapper container d-flex justify-content-between align-items-start w-100">
+    <div class="wrapper d-flex justify-content-around align-items-start w-100">
         <div class="table-container w-50">
             <table class="table">
                 <thead>
