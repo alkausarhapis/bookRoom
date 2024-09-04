@@ -234,21 +234,23 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         const errorMessageElement = document.querySelector(".text-danger");
         if (data.status === "error") {
-          // Tampilkan pesan kesalahan pada elemen <small>
-          errorMessageElement.textContent = data.message;
+          errorMessageElement.textContent = data.message; // Display error message
+          showFlasher("danger", data.message); // Show flasher for error
         } else {
-          alert(data.message); // Tampilkan pesan sukses
-          // Reload tabel dan kalender setelah alert sukses
-          fetchEvents(); // Memperbarui data di tabel
-          fetchBookedDates(); // Memperbarui kalender untuk memperbarui tanggal yang dipesan
+          showFlasher("success", data.message); // Show flasher for success
+          fetchEvents(); // Refresh data in the table after adding a new event
+          fetchBookedDates(); // Refresh calendar to update booked dates
           const addModal = bootstrap.Modal.getInstance(
             document.getElementById("addMeetModal")
           );
-          addModal.hide(); // Tutup modal
-          errorMessageElement.textContent = ""; // Hapus pesan kesalahan sebelumnya
+          addModal.hide(); // Close modal
+          errorMessageElement.textContent = ""; // Clear any previous error message
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        showFlasher("danger", "Terjadi kesalahan. Silakan coba lagi."); // Show flasher for unexpected errors
+      });
   });
 
   // Clear error message on focus
@@ -340,10 +342,30 @@ function deleteEvent(id_activity) {
     })
       .then((response) => response.text())
       .then((message) => {
-        alert(message); // Tampilkan pesan dari server
-        fetchEvents(); // Refresh data di tabel setelah menghapus event
-        fetchBookedDates(); // Refresh kalender untuk memperbarui tanggal yang dipesan
+        showFlasher("warning", message); // Show flasher for delete success
+        fetchEvents(); // Refresh data in the table after deleting event
+        fetchBookedDates(); // Refresh calendar to update booked dates
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        showFlasher(
+          "danger",
+          "Terjadi kesalahan saat menghapus. Silakan coba lagi."
+        ); // Show flasher for delete errors
+      });
   }
+}
+
+// Flasher function to show success or error messages
+function showFlasher(type, message) {
+  const flasher = document.createElement("div");
+  flasher.className = `alert alert-${type} alert-dismissible text-start fade show align-items-center container`;
+  flasher.role = "alert";
+  flasher.innerHTML = `
+    <i class="fa fa-circle-check fa-xl me-2"></i> ${message}
+    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+  `;
+  const wrapper = document.querySelector(".wrapper");
+  wrapper.parentNode.insertBefore(flasher, wrapper); // Insert flasher above the wrapper
+  setTimeout(() => flasher.remove(), 3000);
 }
