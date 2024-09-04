@@ -1,5 +1,5 @@
 <?php
-include 'db.php'; // Make sure your database connection is correct
+include 'db.php';
 
 $meeting_name = $_POST['meeting_name'];
 $start_time = $_POST['start_time'];
