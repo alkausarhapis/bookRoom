@@ -4,14 +4,14 @@ const calendarDaysContainers = document.querySelectorAll(".calendar-days");
 const startTimeInput = document.getElementById("startTime");
 const endTimeInput = document.getElementById("endTime");
 
-// Get the current date
+// Get the current date and reset time to ensure accurate comparison
 const today = new Date();
-today.setHours(0, 0, 0, 0); // Reset time to ensure accurate comparison
+today.setHours(0, 0, 0, 0);
 
-let globalDate = new Date(); // Keep a global reference of the date
+let globalDate = new Date(); // Keep a global reference of the current date
 let selectedStartDate = null; // Track the selected start date
 let selectedEndDate = null; // Track the selected end date
-let bookedDates = []; // Initialize bookedDates array
+let bookedDates = []; // Initialize the booked dates array
 
 // Set the initial text for each current month
 currentMonths.forEach((currentMonth) => {
@@ -71,11 +71,11 @@ function renderCalendar(containerIndex) {
       dayClass = "selected-date"; // Highlight the selected date range
     }
 
-    // Check for booked dates and add the 'booked' class
+    // Check for booked dates and apply the 'booked' class and color
     const bookedEvent = getBookedEventForDate(loopDate);
     if (bookedEvent) {
       dayClass = "booked";
-      dayStyle = `background-color: #${bookedEvent.color};`; // Apply the color from the database
+      dayStyle = `background-color: #${bookedEvent.color};`;
     }
 
     calendarDays.innerHTML += `<div class="${dayClass}" style="${dayStyle}">${i}</div>`;
@@ -108,7 +108,7 @@ function fetchBookedDates() {
         start: event.formatted_start_time,
         end: event.formatted_end_time,
         color: event.color,
-      })); // Correctly initialize bookedDates with start, end, and color
+      }));
 
       // Render all calendars with updated booked dates
       calendarDaysContainers.forEach((_, index) => renderCalendar(index));
@@ -157,7 +157,6 @@ function fetchEvents() {
           const startTimeString = `${("0" + startDate.getHours()).slice(-2)}.${(
             "0" + startDate.getMinutes()
           ).slice(-2)}`;
-
           const endDateString = `${endDate.getDate()} ${
             monthNames[endDate.getMonth()]
           } ${endDate.getFullYear()}`;
@@ -174,19 +173,7 @@ function fetchEvents() {
                 <button class="icon-btn" onclick="deleteEvent(${
                   event.id_activity
                 })">
-                  <button class="icon-btn" onclick="deleteEvent(${
-                    event.id_activity
-                  })">
-                        <i class="bi bi-trash3"></i>
-                  </button>
-                </button>
-              </td>
-              <td>
-                <button class="icon-btn" onclick="editEvent(${
-                  event.id_activity
-                }, '${event.meeting_name}', '${event.formatted_start_time}', '${
-            event.formatted_end_time
-          }')">
+                  <i class="bi bi-trash3"></i>
                 </button>
               </td>
             </tr>
@@ -198,74 +185,70 @@ function fetchEvents() {
     .catch((error) => console.error("Error fetching events:", error));
 }
 
-// Event listeners for Save and Cancel buttons
-document.getElementById("saveEvent").addEventListener("click", function () {
-  reloadCalendar();
-});
-
-document.querySelector(".btn-secondary").addEventListener("click", function () {
-  reloadCalendar();
-});
-
 // Function to reload the calendar
 function reloadCalendar() {
   selectedStartDate = null;
   selectedEndDate = null;
-
-  // Re-render the calendar
-  calendarDaysContainers.forEach((_, index) => renderCalendar(index));
+  calendarDaysContainers.forEach((_, index) => renderCalendar(index)); // Re-render the calendar
 }
 
-// Initialize the calendar and fetch data
-document.addEventListener("DOMContentLoaded", function () {
-  fetchBookedDates();
-  fetchEvents();
+// Function to show success or error messages
+function showFlasher(type, message) {
+  const flasher = document.createElement("div");
+  flasher.className = `alert alert-${type} alert-dismissible text-start fade show align-items-center container`;
+  flasher.role = "alert";
+  flasher.innerHTML = `
+    <i class="fa fa-circle-check fa-xl me-2"></i> ${message}
+    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+  `;
+  const wrapper = document.querySelector(".wrapper");
+  wrapper.parentNode.insertBefore(flasher, wrapper); // Insert flasher above the wrapper
+  setTimeout(() => flasher.remove(), 3000);
+}
 
-  // Fungsi untuk menambahkan event baru
-  document.getElementById("addMeet").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
+// Event listener for adding a new event
+document.getElementById("addMeet").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const formData = new FormData(this);
 
-    fetch("add_events_room.php", {
-      method: "POST",
-      body: formData,
+  fetch("add_events_room.php", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const errorMessageElement = document.querySelector(".text-danger");
+      if (data.status === "error") {
+        errorMessageElement.textContent = data.message; // Display error message
+        showFlasher("danger", data.message); // Show flasher for error
+      } else {
+        showFlasher("success", data.message); // Show flasher for success
+        fetchEvents(); // Refresh data in the table
+        fetchBookedDates(); // Refresh calendar to update booked dates
+        const addModal = bootstrap.Modal.getInstance(
+          document.getElementById("addMeetModal")
+        );
+        addModal.hide(); // Close modal
+        errorMessageElement.textContent = ""; // Clear any previous error message
+      }
     })
-      .then((response) => response.json())
-      .then((data) => {
-        const errorMessageElement = document.querySelector(".text-danger");
-        if (data.status === "error") {
-          errorMessageElement.textContent = data.message; // Display error message
-          showFlasher("danger", data.message); // Show flasher for error
-        } else {
-          showFlasher("success", data.message); // Show flasher for success
-          fetchEvents(); // Refresh data in the table after adding a new event
-          fetchBookedDates(); // Refresh calendar to update booked dates
-          const addModal = bootstrap.Modal.getInstance(
-            document.getElementById("addMeetModal")
-          );
-          addModal.hide(); // Close modal
-          errorMessageElement.textContent = ""; // Clear any previous error message
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        showFlasher("danger", "Terjadi kesalahan. Silakan coba lagi."); // Show flasher for unexpected errors
-      });
-  });
-
-  // Clear error message on focus
-  [startTimeInput, endTimeInput].forEach((input) => {
-    input.addEventListener("focus", function () {
-      document.querySelector(".text-danger").textContent = ""; // Clear error message
+    .catch((error) => {
+      console.error("Error:", error);
+      showFlasher("danger", "An unexpected error occurred. Please try again."); // Show flasher for unexpected errors
     });
+});
+
+// Event listeners for date input focus to clear error messages
+[startTimeInput, endTimeInput].forEach((input) => {
+  input.addEventListener("focus", function () {
+    document.querySelector(".text-danger").textContent = ""; // Clear error message
   });
 });
 
-// Add event listeners for "Today" buttons
-document.querySelectorAll(".btn").forEach(function (element) {
+// Event listeners for "Today" buttons to reset the calendar to the current date
+document.querySelectorAll(".btn").forEach((element) => {
   element.addEventListener("click", function () {
-    let btnClass = element.classList;
-    if (btnClass.contains("today")) globalDate = new Date();
+    if (element.classList.contains("today")) globalDate = new Date();
 
     // Update all calendar headers
     currentMonths.forEach((currentMonth) => {
@@ -280,7 +263,7 @@ document.querySelectorAll(".btn").forEach(function (element) {
   });
 });
 
-// Add event listeners for month navigation buttons
+// Event listeners for month navigation buttons
 document.querySelectorAll(".month-btn").forEach((element) => {
   element.addEventListener("click", function () {
     const isPrev = element.classList.contains("prev");
@@ -299,7 +282,7 @@ document.querySelectorAll(".month-btn").forEach((element) => {
   });
 });
 
-// Add event listeners to the start and end date inputs
+// Event listeners to handle date input changes and re-render calendars
 [startTimeInput, endTimeInput].forEach((input) => {
   input.addEventListener("change", function () {
     const startDate = new Date(startTimeInput.value);
@@ -319,18 +302,7 @@ document.querySelectorAll(".month-btn").forEach((element) => {
   });
 });
 
-document.querySelectorAll('input[name="color"]').forEach((radio) => {
-  radio.addEventListener("change", function () {
-    const selectedColor = this.value;
-
-    // Update preview background for selected dates
-    document.querySelectorAll(".selected-date").forEach((day) => {
-      day.style.backgroundColor = `#${selectedColor}`;
-    });
-  });
-});
-
-// Fungsi untuk menghapus event
+// Function to delete an event after user confirmation
 function deleteEvent(id_activity) {
   if (confirm("Are you sure you want to delete this event?")) {
     fetch("delete_events_room.php", {
@@ -343,29 +315,21 @@ function deleteEvent(id_activity) {
       .then((response) => response.text())
       .then((message) => {
         showFlasher("warning", message); // Show flasher for delete success
-        fetchEvents(); // Refresh data in the table after deleting event
+        fetchEvents(); // Refresh data in the table
         fetchBookedDates(); // Refresh calendar to update booked dates
       })
       .catch((error) => {
         console.error("Error:", error);
         showFlasher(
           "danger",
-          "Terjadi kesalahan saat menghapus. Silakan coba lagi."
+          "An error occurred while deleting. Please try again."
         ); // Show flasher for delete errors
       });
   }
 }
 
-// Flasher function to show success or error messages
-function showFlasher(type, message) {
-  const flasher = document.createElement("div");
-  flasher.className = `alert alert-${type} alert-dismissible text-start fade show align-items-center container`;
-  flasher.role = "alert";
-  flasher.innerHTML = `
-    <i class="fa fa-circle-check fa-xl me-2"></i> ${message}
-    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-  `;
-  const wrapper = document.querySelector(".wrapper");
-  wrapper.parentNode.insertBefore(flasher, wrapper); // Insert flasher above the wrapper
-  setTimeout(() => flasher.remove(), 3000);
-}
+// Initialize the calendar and events data on page load
+document.addEventListener("DOMContentLoaded", function () {
+  fetchBookedDates();
+  fetchEvents();
+});
