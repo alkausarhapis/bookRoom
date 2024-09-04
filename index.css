@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
-/* Global */
 :root {
   --primary-color: #ef5a22;
 }
@@ -10,21 +9,22 @@
   padding: 0;
 }
 
-body {
-  font-family: "Poppins", sans-serif !important;
-  background-color: white !important;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-}
-
 .custom-bg,
 .btn-custom {
   background-color: var(--primary-color) !important;
   color: white !important;
 }
 
-/* Calendar */
+body {
+  font-family: "poppins" !important;
+  background-color: white !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .cardlendar {
   background-color: #f1f1f1;
   border-radius: 15px;
@@ -72,22 +72,26 @@ body {
   color: #f8f7fa;
 }
 
-/* Calendar days */
 .calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 40px);
-  gap: 5px;
+  display: flex;
+  flex-wrap: wrap;
   padding-inline: 18px;
-  padding-bottom: 12px;
 }
 
 .weekdays {
+  padding-top: 12px;
+  padding-bottom: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
-  padding-top: 12px;
-  padding-bottom: 1rem;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  gap: 5px;
+  padding-bottom: 12px;
 }
 
 .weekday-name,
@@ -116,14 +120,12 @@ body {
   cursor: pointer;
 }
 
-/* Miscs */
-.selected-date,
-.booked {
+.selected-date {
   line-height: 40px;
   background-color: #105ab4;
   font-weight: 500;
   text-align: center;
-  transition: background-color 0.5s, transform 0.5s;
+  transition: background-color 0.5s, transform 0.5s; /* Smooth transition for background color */
   cursor: pointer;
   color: #f8f7fa;
 }
@@ -149,6 +151,7 @@ body {
   cursor: pointer;
 }
 
+/* Table */
 .icon-btn {
   background: none;
   border: none;
@@ -174,4 +177,15 @@ input[type="radio"]:checked + .color-preview {
 
 input[type="radio"] {
   display: none;
+}
+
+/* Styling for booked dates */
+.booked {
+  line-height: 40px;
+  background-color: #105ab4;
+  font-weight: 500;
+  text-align: center;
+  transition: background-color 0.5s, transform 0.5s; /* Smooth transition for background color */
+  cursor: pointer;
+  color: #f8f7fa;
 }
