@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Simple Calendar with Vanilla JavaScript</title>
+    <title>Book Room</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="index.css" />
@@ -14,7 +14,7 @@
     <h1 class="text-start container mb-4">Book Room</h1>
 
     <div class="wrapper container d-flex justify-content-between align-items-start w-100">
-        <div class="table-container w-50">
+        <div class="table-container" style="width: 60%;">
             <table class="table">
                 <thead>
                     <tr>
@@ -112,7 +112,7 @@
                         </div>
 
                         <div class="d-flex gap-3 justify-content-end">
-                            <button type="button" class="btn btn-secondary rounded-5 px-4"
+                            <button id="closeModal" type="button" class="btn btn-secondary rounded-5 px-4"
                                 data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-custom rounded-5 px-4" id="saveEvent">Save</button>
                         </div>
