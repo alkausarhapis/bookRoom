@@ -1,10 +1,5 @@
 <?php
-include 'db.php'; // Pastikan koneksi database sudah benar
-
-// Cek apakah koneksi berhasil
-if ( $conn->connect_error ) {
-    die( json_encode( array( "error" => "Database connection failed: " . $conn->connect_error ) ) );
-}
+include 'db.php';
 
 $sql = "SELECT id_activity, meeting_name, color,
         DATE_FORMAT(start_time, '%Y-%m-%dT%H:%i:%s') AS formatted_start_time,
@@ -16,18 +11,15 @@ $result = $conn->query( $sql );
 $events = array();
 
 if ( $result ) {
-    // Pastikan query tidak menghasilkan error
     if ( $result->num_rows > 0 ) {
         while ( $row = $result->fetch_assoc() ) {
             $events[] = $row; // Tambahkan setiap baris hasil query ke dalam array events
         }
     }
 } else {
-    // Jika terjadi error pada query, berikan pesan error
     die( json_encode( array( "error" => "Error executing query: " . $conn->error ) ) );
 }
 
-// Set header Content-Type untuk JSON dan output data
 header( 'Content-Type: application/json' );
 echo json_encode( $events );
 
